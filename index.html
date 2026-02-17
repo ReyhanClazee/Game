@@ -1,0 +1,40 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Neon Air Hockey - Menu</title>
+  <link rel="stylesheet" href="menu.css">
+</head>
+<body>
+  <main class="menuRoot">
+    <section class="menuPanel">
+      <h1 class="title">NEON AIR HOCKEY</h1>
+      <p class="subtitle">Mobile-first cyber rink. First to 7 goals wins.</p>
+
+      <div class="group">
+        <p class="groupLabel">Mode</p>
+        <div class="row">
+          <button class="btn modeBtn active" data-mode="ai">VS AI</button>
+          <button class="btn modeBtn" data-mode="two">2 Players</button>
+        </div>
+      </div>
+
+      <div class="group" id="difficultyGroup">
+        <p class="groupLabel">Difficulty</p>
+        <div class="row">
+          <button class="btn difficultyBtn" data-difficulty="easy">Easy (Mudah)</button>
+          <button class="btn difficultyBtn active" data-difficulty="medium">Medium (Normal)</button>
+          <button class="btn difficultyBtn" data-difficulty="hard">Hard (Susah)</button>
+          <button class="btn difficultyBtn" data-difficulty="insane">Insane (Gila)</button>
+        </div>
+        <p id="difficultyHint" class="difficultyHint"></p>
+      </div>
+
+      <button id="startBtn" class="btn primary full">Start Match</button>
+    </section>
+  </main>
+
+  <script src="menu.js"></script>
+</body>
+</html>

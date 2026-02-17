@@ -1,0 +1,71 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Neon Air Hockey - Game</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+    <canvas id="gameCanvas"></canvas>
+
+    <div id="hud">
+      <div id="scoreWrap">
+        <div id="scoreValue">0 : 0</div>
+        <div id="scoreNames">AI (Top) vs You (Bottom)</div>
+      </div>
+    </div>
+
+    <button id="pauseBtn" aria-label="Pause">II</button>
+    <div id="goalFlash"></div>
+    <div id="touchHint" class="hidden">Touch control: drag paddle in your own half.</div>
+
+    <section id="pauseOverlay" class="overlay">
+      <div class="panel stack">
+        <h2 class="title" style="font-size:clamp(24px,5vw,36px);">Paused</h2>
+        <button id="resumeBtn" class="btn">Resume</button>
+        <button id="pauseMenuBtn" class="btn primary">Menu</button>
+      </div>
+    </section>
+
+    <section id="winOverlay" class="overlay">
+      <div class="panel stack">
+        <h2 class="title" id="winnerText" style="font-size:clamp(24px,5vw,36px);">Winner</h2>
+        <p class="subtitle" id="finalScoreText">Final Score: 0 : 0</p>
+        <button id="rematchBtn" class="btn">Rematch</button>
+        <button id="winMenuBtn" class="btn primary">Menu</button>
+      </div>
+    </section>
+
+    <div id="joystickLayer" aria-hidden="true">
+      <div class="joystick top" id="joyTop">
+        <div class="joyBase"></div>
+        <div class="joyArrows">
+          <span class="joyArrow up"></span>
+          <span class="joyArrow right"></span>
+          <span class="joyArrow down"></span>
+          <span class="joyArrow left"></span>
+        </div>
+        <div class="joyStick"></div>
+        <div class="joyLabel">P2</div>
+      </div>
+      <div class="joystick bottom" id="joyBottom">
+        <div class="joyBase"></div>
+        <div class="joyArrows">
+          <span class="joyArrow up"></span>
+          <span class="joyArrow right"></span>
+          <span class="joyArrow down"></span>
+          <span class="joyArrow left"></span>
+        </div>
+        <div class="joyStick"></div>
+        <div class="joyLabel">P1</div>
+      </div>
+    </div>
+
+    <div id="confettiLayer"></div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
