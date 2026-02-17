@@ -16,6 +16,7 @@
 
   let mode = "ai";
   let difficulty = "medium";
+  let sensitivity = 50;
 
   function sanitizeMode(value) {
     return value === "two" ? "two" : "ai";
@@ -25,9 +26,16 @@
     return ["easy", "medium", "hard", "insane"].includes(value) ? value : "medium";
   }
 
+  function sanitizeSensitivity(value) {
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric)) {
+      return 50;
+    }
+    return Math.max(0, Math.min(100, Math.round(numeric)));
+  }
+
   function saveConfig() {
-    const payload = { mode, difficulty };
-    localStorage.setItem("neon-air-hockey-config", JSON.stringify(payload));
+    localStorage.setItem("neon-air-hockey-config", JSON.stringify({ mode, difficulty, sensitivity }));
   }
 
   function setMode(value) {
@@ -62,14 +70,20 @@
 
     const initialMode = sanitizeMode(params.get("mode") || (saved && saved.mode) || "ai");
     const initialDifficulty = sanitizeDifficulty(params.get("difficulty") || (saved && saved.difficulty) || "medium");
+    const initialSensitivity = sanitizeSensitivity(params.get("sensitivity") || (saved && saved.sensitivity) || 50);
 
+    sensitivity = initialSensitivity;
     setDifficulty(initialDifficulty);
     setMode(initialMode);
   }
 
   function goToGame() {
     saveConfig();
-    const query = new URLSearchParams({ mode, difficulty }).toString();
+    const query = new URLSearchParams({
+      mode,
+      difficulty,
+      sensitivity: String(sensitivity)
+    }).toString();
     window.location.href = `game.html?${query}`;
   }
 

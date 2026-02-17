@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Neon Air Hockey - Game</title>
+  <title>Air Hockey - Game</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -24,6 +24,14 @@
     <section id="pauseOverlay" class="overlay">
       <div class="panel stack">
         <h2 class="title" style="font-size:clamp(24px,5vw,36px);">Paused</h2>
+        <div class="pauseSetting">
+          <div class="pauseSettingHead">
+            <span>Sensitivity</span>
+            <span id="pauseSensitivityValue">50</span>
+          </div>
+          <input id="pauseSensitivityRange" class="pauseSensitivityRange" type="range" min="0" max="100" step="1" value="50">
+          <div id="pauseSensitivityDesc" class="pauseSensitivityDesc">Normal seimbang.</div>
+        </div>
         <button id="resumeBtn" class="btn">Resume</button>
         <button id="pauseMenuBtn" class="btn primary">Menu</button>
       </div>

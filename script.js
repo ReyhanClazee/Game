@@ -109,6 +109,9 @@
       const pauseMenuBtn = document.getElementById("pauseMenuBtn");
       const rematchBtn = document.getElementById("rematchBtn");
       const winMenuBtn = document.getElementById("winMenuBtn");
+      const pauseSensitivityRange = document.getElementById("pauseSensitivityRange");
+      const pauseSensitivityValue = document.getElementById("pauseSensitivityValue");
+      const pauseSensitivityDesc = document.getElementById("pauseSensitivityDesc");
 
       const isCoarsePointer = window.matchMedia("(pointer: coarse)").matches;
       const anyCoarsePointer = window.matchMedia("(any-pointer: coarse)").matches;
@@ -121,6 +124,7 @@
       let gamePhase = "playing";
       let gameMode = "ai";
       let aiDifficulty = "medium";
+      let userSensitivity = 50;
       let roundFreeze = 0;
       let pendingRound = null;
       let flashAlpha = 0;
@@ -370,6 +374,14 @@
         return AI_LEVELS[value] ? value : "medium";
       }
 
+      function sanitizeSensitivity(value) {
+        const numeric = Number(value);
+        if (!Number.isFinite(numeric)) {
+          return 50;
+        }
+        return clamp(Math.round(numeric), 0, 100);
+      }
+
       function loadGameConfig() {
         const params = new URLSearchParams(window.location.search);
         let saved = null;
@@ -381,13 +393,51 @@
 
         gameMode = sanitizeMode(params.get("mode") || (saved && saved.mode) || "ai");
         aiDifficulty = sanitizeDifficulty(params.get("difficulty") || (saved && saved.difficulty) || "medium");
+        userSensitivity = sanitizeSensitivity(params.get("sensitivity") || (saved && saved.sensitivity) || 50);
       }
 
       function saveGameConfig() {
         localStorage.setItem("neon-air-hockey-config", JSON.stringify({
           mode: gameMode,
-          difficulty: aiDifficulty
+          difficulty: aiDifficulty,
+          sensitivity: userSensitivity
         }));
+      }
+
+      function getUserSensitivityScale() {
+        // 0 => slower control, 50 => default-ish, 100 => very responsive.
+        return 0.45 + (userSensitivity / 100) * 1.1;
+      }
+
+      function getSensitivityLabel(value) {
+        if (value <= 15) {
+          return "Sangat lambat";
+        }
+        if (value <= 35) {
+          return "Lambat";
+        }
+        if (value <= 60) {
+          return "Normal seimbang";
+        }
+        if (value <= 80) {
+          return "Cepat";
+        }
+        return "Sangat cepat";
+      }
+
+      function updatePauseSensitivityUI() {
+        if (!pauseSensitivityRange || !pauseSensitivityValue || !pauseSensitivityDesc) {
+          return;
+        }
+        pauseSensitivityRange.value = String(userSensitivity);
+        pauseSensitivityValue.textContent = String(userSensitivity);
+        pauseSensitivityDesc.textContent = getSensitivityLabel(userSensitivity);
+      }
+
+      function setSensitivityFromPauseInput(value) {
+        userSensitivity = sanitizeSensitivity(value);
+        updatePauseSensitivityUI();
+        saveGameConfig();
       }
 
       function isJoystickMode() {
@@ -607,6 +657,7 @@
         if (!isJoystickMode() || gamePhase !== "playing") {
           return;
         }
+        const userScale = getUserSensitivityScale();
         for (const side of ["top", "bottom"]) {
           if (!shouldUseJoystickForSide(side)) {
             continue;
@@ -619,7 +670,7 @@
           const strength = (magnitude - state.deadZone) / (1 - state.deadZone);
           const nx = state.x / magnitude;
           const ny = state.y / magnitude;
-          const step = JOYSTICK_MOVE_SPEED * strength * dtScale;
+          const step = JOYSTICK_MOVE_SPEED * userScale * strength * dtScale;
           setPaddleTarget(side, paddles[side].tx + nx * step, paddles[side].ty + ny * step);
         }
       }
@@ -689,7 +740,7 @@
           return;
         }
 
-        const step = 15 * dtScale;
+        const step = 15 * getUserSensitivityScale() * dtScale;
 
         const topDX = (keys.has("d") || keys.has("D") ? 1 : 0) - (keys.has("a") || keys.has("A") ? 1 : 0);
         const topDY = (keys.has("s") || keys.has("S") ? 1 : 0) - (keys.has("w") || keys.has("W") ? 1 : 0);
@@ -722,6 +773,7 @@
         updateScoreboard();
         hideConfetti();
         gamePhase = "playing";
+        updatePauseSensitivityUI();
         setTouchHintVisibility(true);
         updateJoystickVisibility();
       }
@@ -729,7 +781,8 @@
       function backToMenu() {
         const query = new URLSearchParams({
           mode: gameMode,
-          difficulty: aiDifficulty
+          difficulty: aiDifficulty,
+          sensitivity: String(userSensitivity)
         }).toString();
         window.location.href = `index.html?${query}`;
       }
@@ -739,6 +792,7 @@
           return;
         }
         gamePhase = "paused";
+        updatePauseSensitivityUI();
         showOverlay(pauseOverlay, true);
         setTouchHintVisibility(false);
         updateJoystickVisibility();
@@ -1205,9 +1259,10 @@
         applyJoystickMovement(dtScale);
         updateAi(dtMs);
 
-        paddles.bottom.maxSpeed = HUMAN_PADDLE_SPEED;
+        const userScale = getUserSensitivityScale();
+        paddles.bottom.maxSpeed = HUMAN_PADDLE_SPEED * userScale;
         if (gameMode === "two") {
-          paddles.top.maxSpeed = HUMAN_PADDLE_SPEED;
+          paddles.top.maxSpeed = HUMAN_PADDLE_SPEED * userScale;
         }
 
         updatePaddleMotion("top", dtScale);
@@ -1482,6 +1537,15 @@
           startGame();
         });
 
+        if (pauseSensitivityRange) {
+          pauseSensitivityRange.addEventListener("input", () => {
+            setSensitivityFromPauseInput(pauseSensitivityRange.value);
+          });
+          pauseSensitivityRange.addEventListener("change", () => {
+            setSensitivityFromPauseInput(pauseSensitivityRange.value);
+          });
+        }
+
         // Unlock audio on first explicit interaction.
         ["touchstart", "mousedown", "keydown"].forEach((ev) => {
           window.addEventListener(ev, ensureAudio, { once: true, passive: true });
@@ -1494,6 +1558,8 @@
         bindEvents();
         gameMode = sanitizeMode(gameMode);
         aiDifficulty = sanitizeDifficulty(aiDifficulty);
+        userSensitivity = sanitizeSensitivity(userSensitivity);
+        updatePauseSensitivityUI();
         updateScoreboard();
         startGame();
         requestAnimationFrame(loop);
